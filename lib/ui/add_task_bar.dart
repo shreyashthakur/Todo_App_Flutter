@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:flutter_application_todo/controllers/task_controller.dart';
+import 'package:flutter_application_todo/models/task.dart';
 import 'package:flutter_application_todo/ui/theme.dart';
 import 'package:flutter_application_todo/ui/widgets/button.dart';
 import 'package:flutter_application_todo/ui/widgets/input_field.dart';
@@ -16,6 +18,7 @@ class AddTaskBar extends StatefulWidget {
 }
 
 class _AddTaskBarState extends State<AddTaskBar> {
+  final TaskController _taskController = Get.put(TaskController());
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
@@ -229,7 +232,7 @@ class _AddTaskBarState extends State<AddTaskBar> {
 
   _validateDate() {
     if (_titleController.text.isNotEmpty && _noteController.text.isNotEmpty) {
-      //add to database
+      _addTaskToDb();
       Get.back();
     } else if (_titleController.text.isEmpty || _noteController.text.isEmpty) {
       Get.snackbar(
@@ -242,6 +245,23 @@ class _AddTaskBarState extends State<AddTaskBar> {
         ),
       );
     }
+  }
+
+  _addTaskToDb() async {
+    int value = await _taskController.addTask(
+      task: Task(
+        title: _titleController.text,
+        note: _noteController.text,
+        date: DateFormat.yMd().format(_selectedDate),
+        startTime: _startTime,
+        endTime: _endTime,
+        remind: _selectedRemind,
+        repeat: _selectedRepeat,
+        color: _selectedColor,
+        isCompleted: 0,
+      ),
+    );
+    print("My Value is $value");
   }
 }
 

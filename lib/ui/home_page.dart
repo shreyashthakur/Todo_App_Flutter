@@ -3,10 +3,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_todo/ui/add_task_bar.dart';
 import 'package:flutter_application_todo/ui/widgets/button.dart';
+import 'package:flutter_application_todo/ui/widgets/task_tile.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:date_picker_timeline/date_picker_timeline.dart';
+import '../controllers/task_controller.dart';
 import 'theme.dart';
 import '../services/notification_services.dart';
 
@@ -17,6 +20,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   DateTime _selectedDate = DateTime.now();
+  final _taskController = Get.put(TaskController());
   var notifyHelper;
   @override
   void initState() {
@@ -31,7 +35,14 @@ class _HomePageState extends State<HomePage> {
       appBar: _appBar(),
       backgroundColor: Colors.white,
       body: Column(
-        children: [_addTaskBar(), _addDateBar()],
+        children: [
+          _addTaskBar(),
+          _addDateBar(),
+          SizedBox(
+            height: 10,
+          ),
+          _showTasks()
+        ],
       ),
     );
   }
@@ -98,7 +109,10 @@ class _HomePageState extends State<HomePage> {
           ),
           MyButton(
             label: "+ Add Task",
-            onTap: () => Get.to(AddTaskBar()),
+            onTap: () async {
+              await Get.to(AddTaskBar());
+              _taskController.getTasks();
+            },
           ),
         ],
       ),
@@ -116,5 +130,28 @@ class _HomePageState extends State<HomePage> {
         SizedBox(width: 20, height: 20),
       ],
     );
+  }
+
+  _showTasks() {
+    return Expanded(child: Obx(() {
+      return ListView.builder(
+          itemCount: _taskController.taskList.length,
+          itemBuilder: (_, index) {
+            return AnimationConfiguration.staggeredList(
+                position: index,
+                child: SlideAnimation(
+                    child: FadeInAnimation(
+                        child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: (() {
+                        print("Tapped");
+                      }),
+                      child: TaskTile(_taskController.taskList[index]),
+                    ),
+                  ],
+                ))));
+          });
+    }));
   }
 }
