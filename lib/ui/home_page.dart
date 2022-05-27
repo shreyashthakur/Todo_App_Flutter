@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_application_todo/models/task.dart';
 import 'package:flutter_application_todo/ui/add_task_bar.dart';
 import 'package:flutter_application_todo/ui/widgets/button.dart';
 import 'package:flutter_application_todo/ui/widgets/task_tile.dart';
@@ -145,7 +146,8 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     GestureDetector(
                       onTap: (() {
-                        print("Tapped");
+                        _showBottomSheet(
+                            context, _taskController.taskList[index]);
                       }),
                       child: TaskTile(_taskController.taskList[index]),
                     ),
@@ -153,5 +155,90 @@ class _HomePageState extends State<HomePage> {
                 ))));
           });
     }));
+  }
+
+  _showBottomSheet(BuildContext context, Task task) {
+    Get.bottomSheet(Container(
+      padding: const EdgeInsets.only(top: 4),
+      height: task.isCompleted == 1
+          ? MediaQuery.of(context).size.height * 0.24
+          : MediaQuery.of(context).size.height * 0.32,
+      color: Colors.white,
+      child: Column(
+        children: [
+          Container(
+            height: 6,
+            width: 120,
+            decoration: BoxDecoration(
+              color: Color.fromRGBO(203, 161, 53, 1.8),
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          Spacer(),
+          task.isCompleted == 1
+              ? Container()
+              : _bottomSheetButton(
+                  label: "Task Completed",
+                  onTap: () {
+                    _taskController.markTaskCompleted(task.id!);
+                    Get.back();
+                  },
+                  clr: Color.fromARGB(202, 203, 53, 53),
+                  context: context),
+          SizedBox(
+            height: 10,
+          ),
+          _bottomSheetButton(
+              label: "Delete Task",
+              onTap: () {
+                _taskController.delete(task);
+
+                Get.back();
+              },
+              clr: Color.fromARGB(201, 53, 170, 203),
+              context: context),
+          SizedBox(height: 25),
+          _bottomSheetButton(
+              label: "Close",
+              onTap: () {
+                Get.back();
+              },
+              clr: Colors.transparent,
+              isClose: false,
+              context: context)
+        ],
+      ),
+    ));
+  }
+
+  _bottomSheetButton(
+      {required String label,
+      required Function()? onTap,
+      required Color clr,
+      bool isClose = false,
+      required BuildContext context}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        height: 55,
+        width: MediaQuery.of(context).size.width * 0.8,
+        decoration: BoxDecoration(
+            border: Border.all(
+              width: 2,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            color: isClose == true ? Colors.red : clr),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w400,
+                color: isClose == true ? Colors.white : Colors.black),
+          ),
+        ),
+      ),
+    );
   }
 }
